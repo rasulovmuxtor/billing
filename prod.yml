@@ -1,0 +1,76 @@
+version: '3'
+
+volumes:
+  production_postgres_data: { }
+  # django
+  production_temp_data: { }
+  production_media: { }
+  production_static: { }
+  production_locale: { }
+
+services:
+  django: &django
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    volumes:
+      - production_temp_data:/tmp/
+      - production_media:/app/media/
+      - production_static:/app/staticfiles/
+      - production_locale:/app/locale/
+    depends_on:
+      - postgres
+      - redis
+    env_file:
+      - ./.envs/.production/.django
+      - ./.envs/.production/.postgres
+    command: /start
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  postgres:
+    image: postgres:14.1-alpine
+    volumes:
+      - production_postgres_data:/var/lib/postgresql/data
+    env_file:
+      - ./.envs/.production/.postgres
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+
+  nginx:
+    image: nginx:1.15-alpine
+    ports:
+      - "443:443"
+      - "80:80"
+    volumes:
+      - production_media:/app/media/
+      - production_static:/app/staticfiles/
+      - ./compose/production/nginx/:/etc/nginx/conf.d/
+      - ./compose/production/certbot/data/certbot/conf/:/etc/letsencrypt/
+      - ./compose/production/certbot/data/certbot/www/:/var/www/certbot/
+    depends_on:
+      - django
+    restart: always
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "10"
+    command: "/bin/sh -c 'while :; do sleep 6h & wait $${!}; nginx -s reload; done & nginx -g \"daemon off;\"'"
+
+  certbot:
+    image: certbot/certbot
+    depends_on:
+      - nginx
+    volumes:
+      - ./compose/production/certbot/data/certbot/conf/:/etc/letsencrypt/
+      - ./compose/production/certbot/data/certbot/www/:/var/www/certbot/
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"

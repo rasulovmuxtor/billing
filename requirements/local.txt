@@ -1,0 +1,4 @@
+-r ./base.txt
+psycopg2-binary==2.9.3
+faker==13.11.1
+factory-boy==3.2.1

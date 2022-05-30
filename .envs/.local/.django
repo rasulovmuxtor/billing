@@ -1,0 +1,4 @@
+DEBUG=1
+ALLOWED_HOSTS=*
+HOST=http://localhost:8000
+SECRET_KEY=c*$viw(-#0s(4jz=z4smka2w-7w+04-lj@f077*b$s=k5*5s=v
