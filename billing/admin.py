@@ -6,6 +6,12 @@ from billing import models
 class ReportAdmin(admin.ModelAdmin):
     list_display = ['reported_at', 'organization']
 
+    def has_change_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         organization_id = request.user.organization_id
@@ -17,6 +23,10 @@ class ReportAdmin(admin.ModelAdmin):
 @admin.register(models.StudentReport)
 class StudentReportAdmin(admin.ModelAdmin):
     list_display = ['reported_at', 'student']
+
+    def has_change_permission(self, request, obj=None):
+        return False
+
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         organization_id = request.user.organization_id

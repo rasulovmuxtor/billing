@@ -75,36 +75,6 @@ def stripe_webhook(request):
     payload = request.body
     sig_header = request.META['HTTP_STRIPE_SIGNATURE']
     event = None
-
-    # Stripe CLI setup + login
-    # The easiest way to test our webhook is to download Stripe CLI (https://stripe.com/docs/stripe-cli)
-    # After downloading it we need to login by running 'stripe login' in Terminal, this command will generate
-    # a pairing code for us an open our web browser.
-    #
-    # ---------------------------------------------------------------
-    # Your pairing code is: word1-word2-word3-word4
-    # This pairing code verifies your authentication with Stripe.
-    # Press Enter to open the browser (^C to quit)
-    # ---------------------------------------------------------------
-    #
-    # By pressing enter CLI opens our browser and asks us if we want to allow Stripe CLI to access our account
-    # information. We can allow it by clicking 'Allow access' button and confirming the action with our password.
-    #
-    # If everything goes well Stripe CLI will display the following message:
-    #
-    # ---------------------------------------------------------------
-    # > Done! The Stripe CLI is configured for {ACCOUNT_NAME} with account id acct_{ACCOUNT_ID}
-    # Please note: this key will expire after 90 days, at which point you'll need to re-authenticate.
-    # ---------------------------------------------------------------
-    #
-    # Webhook setup
-    # Once we successfully logged in we can start listening to Stripe events and forward them to our webhook using
-    # the following command:
-    #
-    # stripe listen --forward-to localhost:8000/webhook/
-    #
-    # This will generate a webhook signing secret that we should save in our settings.py. After that we will
-    # need to pass it when constructing a Webhook event.
     try:
         event = stripe.Webhook.construct_event(
             payload, sig_header, endpoint_secret
